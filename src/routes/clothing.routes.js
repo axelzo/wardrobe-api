@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { protect } from '../middlewares/auth.middleware.js';
+import upload from '../config/multer.js';
 import {
   getClothingItems,
   createClothingItem,
@@ -12,7 +13,7 @@ const router = Router();
 // Apply the protect middleware to all routes in this file
 router.use(protect);
 
-router.route('/').get(getClothingItems).post(createClothingItem);
-router.route('/:id').put(updateClothingItem).delete(deleteClothingItem);
+router.route('/').get(getClothingItems).post(upload.single('image'), createClothingItem);
+router.route('/:id').put(upload.single('image'), updateClothingItem).delete(deleteClothingItem);
 
 export default router;
