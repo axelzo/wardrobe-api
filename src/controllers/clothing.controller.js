@@ -19,7 +19,9 @@ export const getClothingItems = async (req, res) => {
 // @route   POST /api/clothing
 // @access  Private
 export const createClothingItem = async (req, res) => {
-  const { name, category, color, brand, imageUrl } = req.body;
+  const { name, category, color, brand } = req.body;
+  const imageUrl = req.file ? req.file.path.replace(/\\/g, "/") : null;
+
 
   if (!name || !category || !color) {
     return res.status(400).json({ message: 'Name, category, and color are required' });
@@ -48,7 +50,14 @@ export const createClothingItem = async (req, res) => {
 // @access  Private
 export const updateClothingItem = async (req, res) => {
   const { id } = req.params;
-  const { name, category, color, brand, imageUrl } = req.body;
+  const { name, category, color, brand } = req.body;
+
+  const dataToUpdate = { name, category, color, brand };
+
+  if (req.file) {
+    dataToUpdate.imageUrl = req.file.path.replace(/\\/g, "/");
+  }
+
 
   try {
     const item = await prisma.clothingItem.findUnique({ where: { id: Number(id) } });
@@ -63,7 +72,7 @@ export const updateClothingItem = async (req, res) => {
 
     const updatedItem = await prisma.clothingItem.update({
       where: { id: Number(id) },
-      data: { name, category, color, brand, imageUrl },
+      data: dataToUpdate,
     });
 
     res.json(updatedItem);
