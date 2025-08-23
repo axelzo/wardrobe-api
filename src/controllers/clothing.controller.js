@@ -4,13 +4,15 @@ import prisma from '../config/prisma.js';
 // @route   GET /api/clothing
 // @access  Private
 export const getClothingItems = async (req, res) => {
+  console.log('[CLOTHING] Petición para obtener prendas del usuario:', req.user.userId);
   try {
     const clothingItems = await prisma.clothingItem.findMany({
       where: { ownerId: req.user.userId },
     });
+    console.log('[CLOTHING] Prendas encontradas:', clothingItems.length);
     res.json(clothingItems);
   } catch (error) {
-    console.error(error);
+    console.error('[CLOTHING] Error al obtener prendas:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
@@ -19,11 +21,15 @@ export const getClothingItems = async (req, res) => {
 // @route   POST /api/clothing
 // @access  Private
 export const createClothingItem = async (req, res) => {
+  console.log('[CLOTHING] Petición para crear prenda. Body:', req.body);
+  if (req.file) {
+    console.log('[CLOTHING] Imagen recibida:', req.file.path);
+  }
   const { name, category, color, brand } = req.body;
   const imageUrl = req.file ? req.file.path.replace(/\\/g, "/") : null;
 
-
   if (!name || !category || !color) {
+    console.log('[CLOTHING] Faltan datos obligatorios.');
     return res.status(400).json({ message: 'Name, category, and color are required' });
   }
 
@@ -38,9 +44,10 @@ export const createClothingItem = async (req, res) => {
         ownerId: req.user.userId,
       },
     });
+    console.log('[CLOTHING] Prenda creada:', newItem.id);
     res.status(201).json(newItem);
   } catch (error) {
-    console.error(error);
+    console.error('[CLOTHING] Error al crear prenda:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
@@ -49,6 +56,10 @@ export const createClothingItem = async (req, res) => {
 // @route   PUT /api/clothing/:id
 // @access  Private
 export const updateClothingItem = async (req, res) => {
+  console.log('[CLOTHING] Petición para actualizar prenda. ID:', req.params.id, 'Body:', req.body);
+  if (req.file) {
+    console.log('[CLOTHING] Imagen nueva recibida:', req.file.path);
+  }
   const { id } = req.params;
   const { name, category, color, brand } = req.body;
 
