@@ -4,9 +4,14 @@ import path from 'path';
 
 // Set up storage engine
 const storage = multer.diskStorage({
-  destination: './uploads/',
+  destination: function (req, file, cb) {
+    console.log('[MULTER] Guardando archivo en ./uploads/');
+    cb(null, './uploads/');
+  },
   filename: function (req, file, cb) {
-    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+    const filename = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
+    console.log(`[MULTER] Nombre generado para el archivo: ${filename}`);
+    cb(null, filename);
   },
 });
 
@@ -19,9 +24,12 @@ function checkFileType(file, cb) {
   // Check mime type
   const mimetype = filetypes.test(file.mimetype);
 
+  console.log(`[MULTER] Verificando tipo de archivo: ${file.originalname}, mimetype: ${file.mimetype}`);
   if (mimetype && extname) {
+    console.log('[MULTER] Archivo permitido.');
     return cb(null, true);
   } else {
+    console.log('[MULTER] Error: Solo se permiten imágenes.');
     cb('Error: Images Only!');
   }
 }
