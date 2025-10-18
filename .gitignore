@@ -20,3 +20,7 @@ prisma/dev.db
 
 # Others
 coverage/
+
+# Peacock extension settings
+.vscode/peacock.*
+.vscode/settings.json
