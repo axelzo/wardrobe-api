@@ -6,6 +6,7 @@ import clothingRoutes from './routes/clothing.routes.js';
 
 // Inject env variables
 dotenv.config();
+console.log('[SERVER] Variables de entorno inicializadas.');
 
 const app = express();
 console.log('[SERVER] Express inicializado.');
