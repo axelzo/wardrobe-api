@@ -3,8 +3,12 @@ import app from './app.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import express from 'express';
+import connectDB from './config/database.js'; // Import connectDB
 
 console.log('[SERVER] Iniciando Wardrobe API...');
+
+// Connect to Database
+connectDB(); // Call connectDB to establish connection
 
 // ES Module equivalent of __dirname
 const __filename = fileURLToPath(import.meta.url);
