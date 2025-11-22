@@ -1,4 +1,5 @@
-import prisma from '../config/prisma.js';
+// CAMBIO 1: Importar el modelo User de Mongoose en lugar del cliente de Prisma.
+import User from '../models/user.model.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
@@ -14,17 +15,20 @@ export const register = async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     console.log('[AUTH] Password hasheado.');
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-      },
+    
+    // CAMBIO 2: Usar el método User.create de Mongoose para guardar el nuevo usuario.
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
     });
-    console.log('[AUTH] Usuario creado:', user.id);
-    res.status(201).json({ message: 'User created successfully', userId: user.id });
+    
+    // Usar user._id, que es el ID por defecto en MongoDB.
+    console.log('[AUTH] Usuario creado:', user._id); 
+    res.status(201).json({ message: 'User created successfully', userId: user._id });
   } catch (error) {
-    if (error.code === 'P2002') {
+    // CAMBIO 3: Manejar el error de clave duplicada de Mongoose (código 11000).
+    if (error.code === 11000) {
       console.log('[AUTH] Email ya existe:', email);
       return res.status(409).json({ message: 'Email already exists' });
     }
@@ -43,20 +47,22 @@ export const login = async (req, res) => {
   }
 
   try {
-    const user = await prisma.user.findUnique({ where: { email } });
+    // CAMBIO 4: Usar el método findOne de Mongoose para encontrar al usuario por email.
+    const user = await User.findOne({ email });
     if (!user) {
       console.log('[AUTH] Usuario no encontrado:', email);
-      return res.status(404).json({ message: 'User or Password are not valid' });
+      return res.status(401).json({ message: 'Invalid credentials' });
     }
 
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect) {
       console.log('[AUTH] Password incorrecto para usuario:', email);
-      return res.status(401).json({ message: 'User or Password are not valid' });
+      return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    console.log('[AUTH] Login exitoso. Token generado para usuario:', user.id);
+    // CAMBIO 5: Firmar el token JWT con user._id.
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    console.log('[AUTH] Login exitoso. Token generado para usuario:', user._id);
     res.json({ token });
 
   } catch (error) {
